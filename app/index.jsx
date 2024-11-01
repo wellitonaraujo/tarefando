@@ -2,24 +2,46 @@ import AddButton from "@/components/AddButton";
 import CustomModal from "@/components/CustomModal";
 import HeaderCard from "@/components/HeaderCard";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { GestureHandlerRootView, Swipeable, ScrollView } from 'react-native-gesture-handler';
 
 const App = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [tasks, setTasks] = useState([]);
 
+
+ const [editingTask, setEditingTask] = useState(null); 
+
     const openModal = () => {
         setModalVisible(true);
+        setEditingTask(null); 
     };
 
     const closeModal = () => {
         setModalVisible(false);
+        setEditingTask(null); 
+    };
+
+    const handleEditTask = (id) => {
+        const taskToEdit = tasks.find(task => task.id === id);
+        if (taskToEdit) {
+            setEditingTask(taskToEdit);
+            setModalVisible(true); 
+        }
     };
 
     const handleSaveTask = (taskName) => {
-        if (taskName) {
-            setTasks([...tasks, { id: Date.now().toString(), name: taskName, completed: false }]);
+        if (editingTask) {
+            setTasks(prevTasks =>
+                prevTasks.map(task =>
+                    task.id === editingTask.id ? { ...task, name: taskName } : task
+                )
+            );
+            closeModal();
+        } else {
+            if (taskName) {
+                setTasks([...tasks, { id: Date.now().toString(), name: taskName, completed: false }]);
+            }
         }
     };
 
@@ -119,6 +141,8 @@ const App = () => {
                 visible={modalVisible}
                 onClose={closeModal}
                 onSave={handleSaveTask}
+                taskName={editingTask ? editingTask.name : ''} 
+                isEditing={!!editingTask} 
             />
             <AddButton onPress={openModal} />
         </GestureHandlerRootView>

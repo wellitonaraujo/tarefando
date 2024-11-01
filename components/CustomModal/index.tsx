@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -9,20 +9,31 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 
-
 interface CustomModalProps {
-    visible: boolean;
-    onClose: () => void;
-    onSave: (title: string) => void;
-  }
-  
-const CustomModal: React.FC<CustomModalProps> = ({ visible, onClose, onSave }) => {
-  const [taskName, setTaskName] = useState('');
+  visible: boolean;
+  onClose: () => void;
+  onSave: (title: string) => void;
+  taskName?: string; // Nova propriedade
+  isEditing?: boolean; // Nova propriedade
+}
+
+const CustomModal: React.FC<CustomModalProps> = ({
+  visible,
+  onClose,
+  onSave,
+  taskName = '',
+  isEditing = false, // Valor padrão
+}) => {
+  const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    setInputValue(taskName); // Atualiza o valor do input quando o modal é aberto
+  }, [taskName, visible]);
 
   const saveTask = () => {
-    if (taskName.trim()) {
-      onSave(taskName);
-      setTaskName('');
+    if (inputValue.trim()) {
+      onSave(inputValue);
+      setInputValue('');
     }
   };
 
@@ -43,12 +54,14 @@ const CustomModal: React.FC<CustomModalProps> = ({ visible, onClose, onSave }) =
                 style={styles.input}
                 placeholder="Nome da tarefa"
                 placeholderTextColor="#888"
-                value={taskName}
-                onChangeText={setTaskName}
+                value={inputValue}
+                onChangeText={setInputValue}
               />
 
               <TouchableOpacity style={styles.createButton} onPress={saveTask}>
-                <Text style={styles.createButtonText}>Criar tarefa</Text>
+                <Text style={styles.createButtonText}>
+                  {isEditing ? 'Editar tarefa' : 'Criar tarefa'} {/* Muda o texto do botão */}
+                </Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>

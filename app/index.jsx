@@ -2,8 +2,8 @@ import AddButton from "@/components/AddButton";
 import CustomModal from "@/components/CustomModal";
 import HeaderCard from "@/components/HeaderCard";
 import { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { GestureHandlerRootView, Swipeable, ScrollView } from 'react-native-gesture-handler';
 
 const App = () => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -80,30 +80,40 @@ const App = () => {
                 <HeaderCard totalTasks={tasks.length} completedTasks={tasks.filter(task => task.completed).length} />
             </View>
 
-            {/* Lista de Tarefas Não Concluídas */}
-            <ScrollView contentContainerStyle={styles.listContainer}>
-                {tasks.filter(task => !task.completed).map(task => (
-                    <Swipeable key={task.id} renderRightActions={() => renderRightActions(task.id, task.completed)}>
-                        <View style={styles.taskItem}>
-                            <Text style={styles.taskText}>{task.name}</Text>
-                        </View>
-                    </Swipeable>
-                ))}
+            {/* Verifica se há tarefas */}
+            {tasks.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyTitle}>
+                        Você não possui tarefas <Text style={styles.highlightedText}>hoje</Text>
+                    </Text>
+                    <Text style={styles.emptyDescription}>Clique no botão (+) para criar</Text>
+                </View>
+            ) : (
+                <ScrollView contentContainerStyle={styles.listContainer}>
+                    {/* Lista de Tarefas Não Concluídas */}
+                    {tasks.filter(task => !task.completed).map(task => (
+                        <Swipeable key={task.id} renderRightActions={() => renderRightActions(task.id, task.completed)}>
+                            <View style={styles.taskItem}>
+                                <Text style={styles.taskText}>{task.name}</Text>
+                            </View>
+                        </Swipeable>
+                    ))}
 
-                {/* Seção para tarefas concluídas */}
-                {tasks.some(task => task.completed) && (
-                    <View style={styles.completedSection}>
-                        <Text style={styles.completedTitle}>Concluídas</Text>
-                        {tasks.filter(task => task.completed).map(task => (
-                            <Swipeable key={task.id} renderRightActions={() => renderRightActions(task.id, task.completed)}>
-                                <View style={[styles.taskItem, { opacity: 0.5 }]}>
-                                    <Text style={styles.taskText}>{task.name}</Text>
-                                </View>
-                            </Swipeable>
-                        ))}
-                    </View>
-                )}
-            </ScrollView>
+                    {/* Seção para tarefas concluídas */}
+                    {tasks.some(task => task.completed) && (
+                        <View style={styles.completedSection}>
+                            <Text style={styles.completedTitle}>Concluídas</Text>
+                            {tasks.filter(task => task.completed).map(task => (
+                                <Swipeable key={task.id} renderRightActions={() => renderRightActions(task.id, task.completed)}>
+                                    <View style={[styles.taskItem, { opacity: 0.5 }]}>
+                                        <Text style={styles.taskText}>{task.name}</Text>
+                                    </View>
+                                </Swipeable>
+                            ))}
+                        </View>
+                    )}
+                </ScrollView>
+            )}
 
             <CustomModal
                 visible={modalVisible}
@@ -131,6 +141,29 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '600',
     },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    emptyTitle: {
+        color: '#FFFFFF',
+        fontSize: 20,
+        textAlign: 'center',
+        fontWeight: 'bold',
+        marginBottom: 8
+    },
+
+    highlightedText: {
+        color: '#1A72F3',
+        fontWeight: 'bold',
+    },
+    emptyDescription: {
+        color: '#FFFFFF',
+        fontSize: 13,
+        textAlign: 'center',
+    },
     completedSection: {
         marginTop: 16,
     },
@@ -140,6 +173,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 8,
         marginHorizontal: 16,
+    },
+    taskList: {
+        width: '100%',
     },
     listContainer: {
         paddingBottom: 16,

@@ -8,9 +8,8 @@ import { GestureHandlerRootView, Swipeable, ScrollView } from 'react-native-gest
 const App = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [tasks, setTasks] = useState([]);
-
-
- const [editingTask, setEditingTask] = useState(null); 
+    const [updateKey, setUpdateKey] = useState(0); 
+    const [editingTask, setEditingTask] = useState(null); 
 
     const openModal = () => {
         setModalVisible(true);
@@ -29,7 +28,6 @@ const App = () => {
             setModalVisible(true); 
         }
     };
-
     const handleSaveTask = (taskName) => {
         if (editingTask) {
             setTasks(prevTasks =>
@@ -37,13 +35,15 @@ const App = () => {
                     task.id === editingTask.id ? { ...task, name: taskName } : task
                 )
             );
+            setEditingTask(null);
             closeModal();
+            setUpdateKey(prevKey => prevKey + 1); // Incrementa a chave para forçar a atualização
         } else {
             if (taskName) {
                 setTasks([...tasks, { id: Date.now().toString(), name: taskName, completed: false }]);
             }
         }
-    };
+    }
 
     const handleCompleteTask = (id) => {
         setTasks((prevTasks) => {
@@ -112,29 +112,33 @@ const App = () => {
                 </View>
             ) : (
                 <ScrollView contentContainerStyle={styles.listContainer}>
-                    {/* Lista de Tarefas Não Concluídas */}
-                    {tasks.filter(task => !task.completed).map(task => (
-                        <Swipeable key={task.id} renderRightActions={() => renderRightActions(task.id, task.completed)}>
-                            <View style={styles.taskItem}>
-                                <Text style={styles.taskText}>{task.name}</Text>
-                            </View>
-                        </Swipeable>
-                    ))}
-
-                    {/* Seção para tarefas concluídas */}
-                    {tasks.some(task => task.completed) && (
-                        <View style={styles.completedSection}>
-                            <Text style={styles.completedTitle}>Concluídas</Text>
-                            {tasks.filter(task => task.completed).map(task => (
-                                <Swipeable key={task.id} renderRightActions={() => renderRightActions(task.id, task.completed)}>
-                                    <View style={[styles.taskItem, { opacity: 0.5 }]}>
-                                        <Text style={styles.taskText}>{task.name}</Text>
-                                    </View>
-                                </Swipeable>
-                            ))}
+                {tasks.filter(task => !task.completed).map(task => (
+                    <Swipeable
+                        key={`${task.id}-${updateKey}`} // Adiciona `updateKey` para forçar re-renderização
+                        renderRightActions={() => renderRightActions(task.id, task.completed)}
+                    >
+                        <View style={styles.taskItem}>
+                            <Text style={styles.taskText}>{task.name}</Text>
                         </View>
-                    )}
-                </ScrollView>
+                    </Swipeable>
+                ))}
+
+                {tasks.some(task => task.completed) && (
+                    <View style={styles.completedSection}>
+                        <Text style={styles.completedTitle}>Concluídas</Text>
+                        {tasks.filter(task => task.completed).map(task => (
+                            <Swipeable
+                                key={`${task.id}-${updateKey}`}
+                                renderRightActions={() => renderRightActions(task.id, task.completed)}
+                            >
+                                <View style={[styles.taskItem, { opacity: 0.5 }]}>
+                                    <Text style={styles.taskText}>{task.name}</Text>
+                                </View>
+                            </Swipeable>
+                        ))}
+                    </View>
+                )}
+            </ScrollView>
             )}
 
             <CustomModal
